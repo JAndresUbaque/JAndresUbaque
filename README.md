@@ -23,6 +23,6 @@ Soy **Administrador de Empresas** con una gran pasión por la tecnología. Estoy
 - 💼 [LinkedIn](https://www.linkedin.com/in/jorge-andres-ubaque-garzon-9a8256226/)  
 
 ---
-###:zap: Actividad Reciente
-<!--STAR_SECTION:ACTIVITY-->
-<!--END_SECTION:ACTIVITY>
+### 🚀 Últimos repositorios públicos donde he trabajado:
+_Automáticamente actualizado mediante [GitHub Actions](https://github.com/features/actions)._
+
