@@ -2,35 +2,37 @@ name: Update README with Recent Repositories
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Ejecutar diariamente a medianoche (puedes ajustar el horario)
-  workflow_dispatch: # Permite ejecutar manualmente
+    - cron: '0 0 * * *' # Ejecutar diariamente a medianoche
+  workflow_dispatch: # Permite ejecución manual
 
 jobs:
   update-readme:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out repository
-      uses: actions/checkout@v3
+      - name: Check out repository
+        uses: actions/checkout@v3
 
-    - name: Get recent repositories
-      id: repos
-      uses: octokit/request-action@v3
-      with:
-        route: GET /users/{{ github.actor }}/repos
-        per_page: 5
-        sort: updated
+      - name: Fetch recent repositories
+        id: fetch_repos
+        run: |
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/users/${{ github.actor }}/repos?sort=updated&per_page=5" \
+          > repos.json
 
-    - name: Update README
-      run: |
-        recent_repos=$(echo '${{ steps.repos.outputs.data }}' | jq -r '.[] | "- [" + .name + "](" + .html_url + ")"')
-        echo "### 🚀 Últimos repositorios públicos donde he trabajado:" > README.md
-        echo "$recent_repos" >> README.md
+      - name: Generate README content
+        id: generate_readme
+        run: |
+          echo "### 🚀 Últimos repositorios públicos donde he trabajado:" > recent_repos.md
+          cat repos.json | jq -r '.[] | "- [\(.name)](\(.html_url))"' >> recent_repos.md
+          cat recent_repos.md
 
-    - name: Commit changes
-      run: |
-        git config --local user.name "github-actions[bot]"
-        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add README.md
-        git commit -m "Actualiza README con últimos repositorios" || echo "Sin cambios en el README"
-        git push
+      - name: Update README
+        run: |
+          # Añade los repositorios generados al README.md
+          cat recent_repos.md > README.md
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "Actualiza README con últimos repositorios" || echo "Sin cambios en el README"
+          git push
