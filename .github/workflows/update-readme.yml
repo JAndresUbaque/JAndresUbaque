@@ -1,0 +1,36 @@
+name: Update README with Recent Repositories
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Ejecutar diariamente a medianoche (puedes ajustar el horario)
+  workflow_dispatch: # Permite ejecutar manualmente
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Get recent repositories
+      id: repos
+      uses: octokit/request-action@v3
+      with:
+        route: GET /users/{{ github.actor }}/repos
+        per_page: 5
+        sort: updated
+
+    - name: Update README
+      run: |
+        recent_repos=$(echo '${{ steps.repos.outputs.data }}' | jq -r '.[] | "- [" + .name + "](" + .html_url + ")"')
+        echo "### 🚀 Últimos repositorios públicos donde he trabajado:" > README.md
+        echo "$recent_repos" >> README.md
+
+    - name: Commit changes
+      run: |
+        git config --local user.name "github-actions[bot]"
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add README.md
+        git commit -m "Actualiza README con últimos repositorios" || echo "Sin cambios en el README"
+        git push
